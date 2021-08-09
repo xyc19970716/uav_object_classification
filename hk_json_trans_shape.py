@@ -42,6 +42,10 @@ for i in tqdm(range(len(data))):
     if not os.path.exists(os.path.join(img_path, img_name)):
         continue
     img_data = gdal.Open(os.path.join(img_path, img_name))
+    pixel_size = 1000
+    if img_data.ReadAsArray().shape[1] == 2000:
+        pixel_size = 2000
+    
     img_data_proj = img_data.GetProjection()
     img_data_geo = img_data.GetGeoTransform()
     img_data_geo = list(img_data_geo)
@@ -82,8 +86,8 @@ for i in tqdm(range(len(data))):
         ploy = []
         points = label['Vertex']
         for k in range(len(points)):
-            temp_x = int(points[k]['fX'] * 1000)
-            temp_y = int(points[k]['fY'] * 1000)
+            temp_x = int(points[k]['fX'] * pixel_size)
+            temp_y = int(points[k]['fY'] * pixel_size)
             ploy.append([temp_x, temp_y])
         # ploy = [np.array(ploy)]
         # cv2.fillPoly(mask, ploy, classes[land_type])
