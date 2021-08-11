@@ -20,6 +20,7 @@ from PIL import Image
 import torch
 import torchvision.models as models
 import torchvision.transforms as transforms
+from tqdm import tqdm
 
 def world2Pixel(geoMatrix, x, y):
     """
@@ -36,10 +37,10 @@ classes = ['大豆', '中稻', '晚稻', '甘蔗', '玉米', '番薯', '芝麻',
         #    1      2       3       4       5       6       7       8
 print([classes[i] for i in range(len(classes))])
 
-Mutli_Tem_Images_Path = r'G:\classification\img'#'../../data/processed'
-Mutli_Tem_Images_Paths = glob.glob(os.path.join(Mutli_Tem_Images_Path, "*.JPG"))
+Mutli_Tem_Images_Path = r'I:\戴村镇'#'../../data/processed'
+Mutli_Tem_Images_Paths = glob.glob(os.path.join(Mutli_Tem_Images_Path, "*.tif"))
 
-Crop_Field_Samples_Vector_Path = r'G:\classification\test_shp'
+Crop_Field_Samples_Vector_Path = r'I:\Daicun'
 Crop_Field_Samples_Vector_Paths = glob.glob(os.path.join(Crop_Field_Samples_Vector_Path, "*.shp"))
 
 
@@ -73,7 +74,7 @@ for i, path in enumerate(Mutli_Tem_Images_Paths):
 
     lyr = shapef.GetLayer()
     
-    for j, feature in enumerate(lyr):
+    for j, feature in tqdm(enumerate(lyr)):
         geom =feature.GetGeometryRef()
         if geom == None:
             continue
@@ -93,18 +94,18 @@ for i, path in enumerate(Mutli_Tem_Images_Paths):
         lonMin = tempLon.min()
         latMax = tempLat.max()
         latMin = tempLat.min()
-        print(lonMax, latMax, lonMin, latMin)
+        # print(lonMax, latMax, lonMin, latMin)
         # compute bounding box
         x1, y1 = world2Pixel(geoTrans, lonMax, latMin)
         x2, y2 = world2Pixel(geoTrans, lonMin, latMax)
-        print(x1, y1, x2, y2)
+        # print(x1, y1, x2, y2)
         # switch x-y to y-x
         tempPatch = img[:,y2:y1 , x2:x1]
-        print(tempPatch.shape)
+        # print(tempPatch.shape)
         for p in points:
             x, y = world2Pixel(geoTrans, p[0], p[1])
             tempPix.append((x - x2, y - y2))
-        print(tempPix)
+        # print(tempPix)
         tempPatch = np.transpose(tempPatch,(1, 2, 0))
         mask = np.zeros((y1 - y2, x1 - x2), dtype="uint8")
         cv2.polylines(mask, np.int32([tempPix]), 1, 1)
@@ -119,6 +120,6 @@ for i, path in enumerate(Mutli_Tem_Images_Paths):
             output = model(input_tensor)
             pred_y = torch.max(output,1)[1]
             pred_y_data = pred_y.detach().cpu().numpy()
-        feature.SetField('LUType', int(pred_y_data))
+        feature.SetField('LUType', int(pred_y_data)+1)
         lyr.SetFeature(feature)
-        print(j, int(pred_y_data))
+        # print(j, int(pred_y_data))

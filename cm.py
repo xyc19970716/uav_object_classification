@@ -119,11 +119,11 @@ class ConfusionMatrix(object):
         plt.show()
 
 
-classes = ['0', '1', '2', '3', '4']
+classes = ['1', '2', '3', '4', '5', '6', '7','8']
         #    1      2       3       4       5       6       7       8
 print([classes[i] for i in range(len(classes))])
 
-Mutli_Tem_Images_Path = r'D:\classification\data\val'#'../../data/processed'
+Mutli_Tem_Images_Path = r'I:\classification_data\data\val'#'../../data/processed'
 Mutli_Tem_Images_Paths = os.listdir(Mutli_Tem_Images_Path)
 
 
@@ -162,7 +162,8 @@ for i, type_path in enumerate(Mutli_Tem_Images_Paths):
             output = model(input_tensor)
             pred_y = torch.max(output,1)[1]
             pred_y_data = pred_y.detach().cpu().numpy() 
-            confusion.update(pred_y_data[0], int(type_path))
+            # print(pred_y_data[0]+1, int(type_path))
+            confusion.update(pred_y_data[0], int(type_path)-1)
 
 
 
